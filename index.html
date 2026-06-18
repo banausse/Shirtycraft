@@ -566,7 +566,7 @@ async function syncFromSupabase() {
     const res = await fetch(SUPABASE_URL+'/rest/v1/dashboard_data?id=eq.main&select=data', {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON }
     });
-    if (!res.ok) return;
+    if (!res.ok) { document.querySelector('.sync-dot').classList.add('offline'); return; }
     const rows = await res.json();
     if (rows && rows[0] && rows[0].data) {
       Object.assign(state, rows[0].data);
@@ -577,20 +577,22 @@ async function syncFromSupabase() {
       dot.style.background = 'var(--green)'; dot.classList.remove('syncing', 'offline');
       toast('Daten von Server geladen');
     }
-  } catch(e) { document.querySelector('.sync-dot').classList.add('offline'); }
+  } catch(e) { try { document.querySelector('.sync-dot').classList.add('offline'); } catch(_) {} }
 }
 async function syncToSupabase() {
   const dot = document.querySelector('.sync-dot');
   dot.classList.add('syncing'); dot.classList.remove('offline');
   try {
-    await fetch(SUPABASE_URL+'/rest/v1/dashboard_data', {
+    const res = await fetch(SUPABASE_URL+'/rest/v1/dashboard_data', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON, 'Prefer': 'resolution=merge-duplicates' },
       body: JSON.stringify({ id:'main', data:state, updated_at:new Date().toISOString() })
     });
-    dot.classList.remove('syncing'); dot.style.background = 'var(--green)';
+    dot.classList.remove('syncing');
+    if (res.ok) { dot.style.background = 'var(--green)'; }
+    else { dot.classList.add('offline'); }
   } catch(e) {
-    dot.classList.remove('syncing'); dot.classList.add('offline');
+    try { dot.classList.remove('syncing'); dot.classList.add('offline'); } catch(_) {}
   }
 }
 
