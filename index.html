@@ -283,7 +283,6 @@
 
   input[type="file"] { display: none; }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -557,20 +556,18 @@ const AGENTS = [
 
 const SUPABASE_URL = 'https://fqkjnuvilclxadfrncot.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxa2pudXZpbGNseGFkZnJuY290Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3ODc4NDQsImV4cCI6MjA5NzM2Mzg0NH0.0c4IgImzLlNcj30CtkH9cUIHbpRHLHNaTPJk2O1QiVI';
-let supabase = null;
-
-try { supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON); } catch(e) {}
-
 let state = load();
 syncFromSupabase();
 
 async function syncFromSupabase() {
-  if (!supabase) return;
   try {
-    const { data, error } = await supabase.from('dashboard_data').select('data').eq('id', 'main').single();
-    if (error) return;
-    if (data && data.data) {
-      Object.assign(state, data.data);
+    const res = await fetch(SUPABASE_URL+'/rest/v1/dashboard_data?id=eq.main&select=data', {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON }
+    });
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (rows && rows[0] && rows[0].data) {
+      Object.assign(state, rows[0].data);
       if (!state.costs) state.costs = JSON.parse(JSON.stringify(DEFAULT.costs));
       localStorage.setItem(STORE, JSON.stringify(state));
       renderAll();
@@ -581,11 +578,14 @@ async function syncFromSupabase() {
   } catch(e) { document.querySelector('.sync-dot').classList.add('offline'); }
 }
 async function syncToSupabase() {
-  if (!supabase) return;
   const dot = document.querySelector('.sync-dot');
   dot.classList.add('syncing'); dot.classList.remove('offline');
   try {
-    await supabase.from('dashboard_data').upsert({ id:'main', data:state, updated_at:new Date().toISOString() });
+    await fetch(SUPABASE_URL+'/rest/v1/dashboard_data', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON, 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ id:'main', data:state, updated_at:new Date().toISOString() })
+    });
     dot.classList.remove('syncing'); dot.style.background = 'var(--green)';
   } catch(e) {
     dot.classList.remove('syncing'); dot.classList.add('offline');
