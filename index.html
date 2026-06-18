@@ -561,23 +561,25 @@ syncFromSupabase();
 setInterval(syncFromSupabase, 30000);
 
 async function syncFromSupabase() {
-  if (document.querySelector('.modal-bg.open')) return; // nicht während Bearbeitung
+  if (document.querySelector('.modal-bg.open')) return;
+  const dot = document.querySelector('.sync-dot');
+  dot.classList.add('syncing'); dot.classList.remove('offline');
   try {
     const res = await fetch(SUPABASE_URL+'/rest/v1/dashboard_data?id=eq.main&select=data', {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON }
     });
-    if (!res.ok) { document.querySelector('.sync-dot').classList.add('offline'); return; }
+    if (!res.ok) { dot.classList.remove('syncing'); dot.classList.add('offline'); toast('Sync-Fehler (Code '+res.status+')'); return; }
     const rows = await res.json();
+    dot.classList.remove('syncing');
     if (rows && rows[0] && rows[0].data) {
       Object.assign(state, rows[0].data);
       if (!state.costs) state.costs = JSON.parse(JSON.stringify(DEFAULT.costs));
       localStorage.setItem(STORE, JSON.stringify(state));
       renderAll();
-      const dot = document.querySelector('.sync-dot');
-      dot.style.background = 'var(--green)'; dot.classList.remove('syncing', 'offline');
+      dot.style.background = 'var(--green)';
       toast('Daten von Server geladen');
     }
-  } catch(e) { try { document.querySelector('.sync-dot').classList.add('offline'); } catch(_) {} }
+  } catch(e) { try { dot.classList.remove('syncing'); dot.classList.add('offline'); toast('Sync-Fehler'); } catch(_) {} }
 }
 async function syncToSupabase() {
   const dot = document.querySelector('.sync-dot');
@@ -590,9 +592,9 @@ async function syncToSupabase() {
     });
     dot.classList.remove('syncing');
     if (res.ok) { dot.style.background = 'var(--green)'; }
-    else { dot.classList.add('offline'); }
+    else { dot.classList.add('offline'); toast('Sync-Fehler (Code '+res.status+')'); }
   } catch(e) {
-    try { dot.classList.remove('syncing'); dot.classList.add('offline'); } catch(_) {}
+    try { dot.classList.remove('syncing'); dot.classList.add('offline'); toast('Sync-Fehler'); } catch(_) {}
   }
 }
 
