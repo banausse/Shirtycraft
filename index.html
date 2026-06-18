@@ -273,15 +273,6 @@
 
   .empty { text-align: center; padding: 22px; color: var(--text3); font-size: 13px; }
 
-  /* History */
-  .hist-row { display: flex; align-items: center; gap: 11px; background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 7px; }
-  .hist-action { font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono'; white-space: nowrap; }
-  .hist-action.exp { color: var(--green); }
-  .hist-action.imp { color: var(--blue); }
-  .hist-main { flex: 1; min-width: 0; }
-  .hist-device { font-size: 13px; color: var(--text); font-weight: 500; }
-  .hist-time { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono'; white-space: nowrap; }
-
   .toast {
     position: fixed; bottom: calc(90px + var(--safe-bottom)); left: 50%; transform: translateX(-50%) translateY(20px);
     background: var(--green); color: #08130c; padding: 11px 20px; border-radius: 24px;
@@ -405,10 +396,6 @@
   <div id="costs-list"></div>
   <button class="add-btn" onclick="openCostModal()">＋ Tool hinzufügen</button>
 
-  <!-- HISTORY -->
-  <div class="sec-title">Sync-Historie</div>
-  <div id="history-list"></div>
-
   <!-- ROADMAP -->
   <div class="sec-title">Roadmap</div>
   <div id="roadmap"></div>
@@ -423,9 +410,7 @@
 <div class="toolbar">
   <button class="tool-btn primary" onclick="openOrderModal()"><span class="tool-ico">＋</span>Auftrag</button>
   <button class="tool-btn" onclick="openDesignModal()"><span class="tool-ico">🎨</span>Design</button>
-  <button class="tool-btn" onclick="exportData()"><span class="tool-ico">⬆</span>Export</button>
-  <button class="tool-btn" onclick="document.getElementById('import-file').click()"><span class="tool-ico">⬇</span>Import</button>
-  <input type="file" id="import-file" accept=".json" onchange="importData(event)">
+
 </div>
 
 <!-- ORDER MODAL -->
@@ -948,69 +933,19 @@ function setDevice(val) {
 function renderDevice() {
   document.getElementById('device-select').value = state.device || 'iPhone';
 }
-function addHistory(action) {
-  const now = new Date();
-  const stamp = now.toLocaleString('de-DE', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
-  state.history.unshift({ stamp, action, device: state.device || '–' });
-  if (state.history.length > 30) state.history = state.history.slice(0,30);
-}
-function renderHistory() {
-  const el = document.getElementById('history-list');
-  if (!state.history || !state.history.length) {
-    el.innerHTML = '<div class="empty">Noch keine Sync-Aktionen. Export oder Import erzeugt einen Eintrag.</div>';
-    return;
-  }
-  el.innerHTML = state.history.map(h => `
-    <div class="hist-row">
-      <span class="hist-action ${h.action==='Export'?'exp':'imp'}">${h.action==='Export'?'⬆':'⬇'} ${h.action}</span>
-      <div class="hist-main"><span class="hist-device">${esc(h.device)}</span></div>
-      <span class="hist-time">${h.stamp}</span>
-    </div>`).join('');
-}
-
-/* ---------- EXPORT / IMPORT ---------- */
-function exportData() {
-  addHistory('Export');
-  localStorage.setItem(STORE, JSON.stringify(state));
-  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const d = new Date().toISOString().slice(0,10);
-  a.href = url; a.download = `shirtycraft-backup-${d}.json`;
-  a.click(); URL.revokeObjectURL(url);
-  renderAll();
-  toast('Backup exportiert');
-}
-function importData(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      if (data.orders && data.designs) {
-        const currentDevice = state.device;
-        const mergedHistory = data.history || [];
-        state = data;
-        if (!state.device) state.device = currentDevice;
-        if (!state.costs) state.costs = JSON.parse(JSON.stringify(DEFAULT.costs));
-        state.history = mergedHistory;
-        addHistory('Import');
-        save(); toast('Backup importiert');
-      } else toast('Ungültige Datei');
-    } catch(err) { toast('Fehler beim Import'); }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-}
-
 function esc(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 /* ---------- RENDER ALL ---------- */
 function renderAll() {
-  renderDevice(); renderCountdown(); renderKPIs(); renderPipeline();
-  renderOrders(); renderDesigns(); renderCosts();
-  renderHistory(); renderRoadmap(); renderAgents();
+  try { renderDevice(); } catch(e) {}
+  try { renderCountdown(); } catch(e) {}
+  try { renderKPIs(); } catch(e) {}
+  try { renderPipeline(); } catch(e) {}
+  try { renderOrders(); } catch(e) {}
+  try { renderDesigns(); } catch(e) {}
+  try { renderCosts(); } catch(e) {}
+  try { renderRoadmap(); } catch(e) {}
+  try { renderAgents(); } catch(e) {}
 }
 
 document.querySelectorAll('.modal-bg').forEach(bg => {
