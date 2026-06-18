@@ -37,7 +37,7 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 
   html { -webkit-text-size-adjust: 100%; }
 
@@ -77,7 +77,7 @@
   .device-pick { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; padding: 5px 10px 5px 12px; }
   .device-pick select {
     background: transparent; border: none; color: var(--text); font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 500;
-    outline: none; -webkit-appearance: none; padding-right: 4px; cursor: pointer;
+    outline: none; padding-right: 14px; cursor: pointer; appearance: none; -webkit-appearance: none;
   }
 
   /* Section title */
@@ -159,7 +159,7 @@
   .card {
     background: var(--card); border: 1px solid var(--border2);
     border-radius: var(--radius-sm); padding: 13px 14px; margin-bottom: 8px;
-    display: flex; align-items: center; gap: 12px;
+    display: flex; align-items: center; gap: 12px; cursor: pointer;
   }
   .card-main { flex: 1; min-width: 0; }
   .card-title { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -177,7 +177,7 @@
   .id-tag { font-family: 'JetBrains Mono'; font-size: 10px; font-weight: 700; color: var(--text3); background: var(--bg3); padding: 3px 7px; border-radius: 5px; }
 
   /* Cost rows */
-  .cost-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); margin-bottom: 7px; }
+  .cost-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); margin-bottom: 7px; cursor: pointer; }
   .cost-name { font-size: 13px; font-weight: 500; }
   .cost-note { font-size: 10px; color: var(--text3); margin-top: 1px; }
   .cost-val { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 14px; }
@@ -254,10 +254,15 @@
   .modal h3 { font-family: 'Archivo'; font-size: 18px; font-weight: 700; margin-bottom: 16px; }
   .field { margin-bottom: 13px; }
   .field label { display: block; font-size: 12px; color: var(--text2); font-weight: 600; margin-bottom: 5px; }
-  .field input, .field select {
+  .field input {
     width: 100%; background: var(--bg3); border: 1px solid var(--border);
     border-radius: var(--radius-sm); padding: 12px; color: var(--text);
-    font-size: 16px; font-family: inherit; outline: none; -webkit-appearance: none;
+    font-size: 16px; font-family: inherit; outline: none; -webkit-appearance: none; appearance: none;
+  }
+  .field select {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px; color: var(--text);
+    font-size: 16px; font-family: inherit; outline: none; cursor: pointer;
   }
   .field input:focus, .field select:focus { border-color: var(--green2); }
   .modal-actions { display: flex; gap: 9px; margin-top: 8px; }
