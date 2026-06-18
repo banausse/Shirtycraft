@@ -731,18 +731,18 @@ function renderDesigns() {
 }
 
 /* ---------- COSTS ---------- */
-function fmtUSD(n){ return '$' + (Math.round(n*100)/100).toLocaleString('de-DE',{minimumFractionDigits: n%1?2:0, maximumFractionDigits:2}); }
+function fmtEUR(n){ return (Math.round(n*100)/100).toLocaleString('de-DE',{minimumFractionDigits: n%1?2:0, maximumFractionDigits:2}) + ' €'; }
 function renderCosts() {
   let html = state.costs.map(c => `
     <div class="cost-row" onclick='openCostModal(${JSON.stringify(c.id)})'>
       <div><div class="cost-name">${esc(c.name)}</div><div class="cost-note">${esc(c.note)}</div></div>
-      <div class="cost-val">${fmtUSD(c.val)}</div>
+      <div class="cost-val">${fmtEUR(c.val)}</div>
     </div>`).join('');
   const total = state.costs.reduce((s,c)=> s + (parseFloat(c.val)||0), 0);
   const be = Math.max(1, Math.ceil(total / EUR_PER_PRODUCT));
   html += `<div class="cost-row cost-total">
     <div><div class="cost-name">Gesamt / Monat</div><div class="cost-note">Break-Even: ${be} Aufträge à 10€</div></div>
-    <div class="cost-val">${fmtUSD(total)}</div></div>`;
+    <div class="cost-val">${fmtEUR(total)}</div></div>`;
   document.getElementById('costs-list').innerHTML = html;
 }
 function openCostModal(id) {
