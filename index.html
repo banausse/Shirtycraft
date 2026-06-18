@@ -66,9 +66,7 @@
   .brand { display: flex; align-items: center; gap: 10px; }
   .brand-logo {
     width: 38px; height: 38px; border-radius: 9px;
-    background: linear-gradient(145deg, var(--green), var(--green-deep));
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Archivo'; font-weight: 800; font-size: 17px; color: #fff;
+    object-fit: cover; display: block;
     box-shadow: 0 2px 12px var(--green-glow);
   }
   .brand-text h1 { font-family: 'Archivo'; font-weight: 700; font-size: 17px; letter-spacing: -.02em; }
@@ -293,7 +291,7 @@
 <div class="topbar">
   <div class="topbar-inner">
     <div class="brand">
-      <div class="brand-logo">SC</div>
+      <img class="brand-logo" src="logo.png" alt="Shirtycraft">
       <div class="brand-text">
         <h1>Shirtycraft</h1>
         <p>Dashboard · Phase 1</p>
