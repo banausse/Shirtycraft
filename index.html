@@ -821,7 +821,8 @@ function togglePhase(id) {
 }
 function toggleMs(id, e) {
   e.stopPropagation();
-  const cur = state.milestones[id] ?? ROADMAP.flatMap(p=>p.ms).find(m=>m.id===id).done ?? false;
+  const allMs = []; ROADMAP.forEach(p => p.ms.forEach(m => allMs.push(m)));
+  const cur = state.milestones[id] ?? allMs.find(m=>m.id===id)?.done ?? false;
   state.milestones[id] = !cur;
   save();
 }
