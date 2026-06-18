@@ -347,7 +347,7 @@
       </div>
       <div class="rev-goal">
         <div class="rev-goal-num" id="rev-goal">Break-Even</div>
-        <div class="rev-goal-label">~37 € Toolkosten/Mon.</div>
+        <div class="rev-goal-label" id="rev-goal-label">~37 € Toolkosten/Mon.</div>
       </div>
     </div>
     <div class="rev-bar-track"><div class="rev-bar-fill" id="rev-bar"></div></div>
@@ -473,7 +473,7 @@
     <input type="hidden" id="cost-id">
     <div class="field"><label>Tool-Name</label><input type="text" id="cost-name" placeholder="z.B. Midjourney Standard"></div>
     <div class="field"><label>Notiz</label><input type="text" id="cost-note" placeholder="z.B. Bildgenerierung"></div>
-    <div class="field"><label>Kosten / Monat (USD)</label><input type="number" id="cost-val" placeholder="0" min="0" step="0.01"></div>
+    <div class="field"><label>Kosten / Monat (€)</label><input type="number" id="cost-val" placeholder="0" min="0" step="0.01"></div>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModal('cost-modal')">Abbrechen</button>
       <button class="btn btn-save" onclick="saveCost()">Speichern</button>
@@ -487,7 +487,7 @@
 <script>
 const STORE = 'shirtycraft_dashboard_v1';
 const DEADLINE = new Date('2026-07-15T23:59:59');
-const TOOLCOST = 37;
+function toolCostTotal() { return state.costs.reduce((s,c)=> s + (parseFloat(c.val)||0), 0); }
 const EUR_PER_DESIGN = 49;
 const EUR_PER_PRODUCT = 10;
 
@@ -655,14 +655,16 @@ function renderKPIs() {
   document.getElementById('rev-design').textContent = designRev + ' €';
   document.getElementById('rev-margin').textContent = marginRev + ' €';
 
-  const beTarget = TOOLCOST;
-  const pct = Math.min(100, (total/beTarget)*100);
+  const beTarget = toolCostTotal();
+  document.getElementById('rev-goal-label').textContent = fmtEUR(beTarget) + ' Toolkosten/Mon.';
+  document.getElementById('rev-be-mark').textContent = 'BE ' + fmtEUR(beTarget);
+  const pct = Math.min(100, beTarget>0 ? (total/beTarget)*100 : 0);
   document.getElementById('rev-bar').style.width = pct + '%';
   if (total >= beTarget) {
     document.getElementById('rev-goal').textContent = '✓ erreicht';
     document.getElementById('rev-goal').style.color = 'var(--green)';
   } else {
-    document.getElementById('rev-goal').textContent = (beTarget-total) + ' € fehlen';
+    document.getElementById('rev-goal').textContent = Math.round(beTarget-total) + ' € fehlen';
     document.getElementById('rev-goal').style.color = 'var(--text)';
   }
 }
