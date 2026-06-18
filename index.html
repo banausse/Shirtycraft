@@ -558,8 +558,10 @@ const SUPABASE_URL = 'https://fqkjnuvilclxadfrncot.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxa2pudXZpbGNseGFkZnJuY290Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3ODc4NDQsImV4cCI6MjA5NzM2Mzg0NH0.0c4IgImzLlNcj30CtkH9cUIHbpRHLHNaTPJk2O1QiVI';
 let state = load();
 syncFromSupabase();
+setInterval(syncFromSupabase, 30000);
 
 async function syncFromSupabase() {
+  if (document.querySelector('.modal-bg.open')) return; // nicht während Bearbeitung
   try {
     const res = await fetch(SUPABASE_URL+'/rest/v1/dashboard_data?id=eq.main&select=data', {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON }
