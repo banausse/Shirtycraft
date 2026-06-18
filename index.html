@@ -71,14 +71,11 @@
   }
   .brand-text h1 { font-family: 'Archivo'; font-weight: 700; font-size: 17px; letter-spacing: -.02em; }
   .brand-text p { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono'; margin-top: -1px; }
-  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); transition: background .3s; }
-  .sync-dot.offline { background: var(--text3); box-shadow: none; }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); box-shadow: none; transition: background .3s; }
+  .sync-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
   .sync-dot.syncing { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
-  .device-pick { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; padding: 5px 10px 5px 12px; }
-  .device-pick select {
-    background: transparent; border: none; color: var(--text); font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 500;
-    outline: none; padding-right: 14px; cursor: pointer; appearance: none; -webkit-appearance: none;
-  }
+  .device-pick { display: flex; align-items: center; gap: 6px; background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; padding: 5px 10px; cursor: pointer; }
+  .sync-label { font-family: 'JetBrains Mono'; font-size: 11px; font-weight: 600; color: var(--text2); }
 
   /* Section title */
   .sec-title {
@@ -295,15 +292,9 @@
         <p>Dashboard · Phase 1</p>
       </div>
     </div>
-    <div class="device-pick">
-      <span class="sync-dot" title="Lokal gespeichert"></span>
-      <select id="device-select" onchange="setDevice(this.value)">
-        <option value="iPhone">iPhone</option>
-        <option value="Laptop">Laptop</option>
-        <option value="PC">PC</option>
-        <option value="Mac">Mac</option>
-        <option value="iPad">iPad</option>
-      </select>
+    <div class="device-pick" onclick="syncFromSupabase()">
+      <span class="sync-dot" title="Sync-Status"></span>
+      <span class="sync-label">Sync</span>
     </div>
   </div>
 </div>
@@ -557,33 +548,35 @@ const AGENTS = [
 const SUPABASE_URL = 'https://fqkjnuvilclxadfrncot.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxa2pudXZpbGNseGFkZnJuY290Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3ODc4NDQsImV4cCI6MjA5NzM2Mzg0NH0.0c4IgImzLlNcj30CtkH9cUIHbpRHLHNaTPJk2O1QiVI';
 let state = load();
+let firstSync = true;
 syncFromSupabase();
 setInterval(syncFromSupabase, 30000);
 
 async function syncFromSupabase() {
   if (document.querySelector('.modal-bg.open')) return;
   const dot = document.querySelector('.sync-dot');
-  dot.classList.add('syncing'); dot.classList.remove('offline');
+  dot.classList.add('syncing'); dot.classList.remove('online', 'offline');
   try {
     const res = await fetch(SUPABASE_URL+'/rest/v1/dashboard_data?id=eq.main&select=data', {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON }
     });
-    if (!res.ok) { dot.classList.remove('syncing'); dot.classList.add('offline'); toast('Sync-Fehler (Code '+res.status+')'); return; }
-    const rows = await res.json();
     dot.classList.remove('syncing');
+    if (!res.ok) { dot.classList.add('offline'); if (firstSync) toast('Sync-Fehler (Code '+res.status+')'); firstSync=false; return; }
+    const rows = await res.json();
     if (rows && rows[0] && rows[0].data) {
       Object.assign(state, rows[0].data);
       if (!state.costs) state.costs = JSON.parse(JSON.stringify(DEFAULT.costs));
       localStorage.setItem(STORE, JSON.stringify(state));
       renderAll();
-      dot.style.background = 'var(--green)';
-      toast('Daten von Server geladen');
+      if (firstSync) toast('Daten von Server geladen');
     }
-  } catch(e) { try { dot.classList.remove('syncing'); dot.classList.add('offline'); toast('Sync-Fehler'); } catch(_) {} }
+    dot.classList.add('online');
+  } catch(e) { try { dot.classList.remove('syncing'); dot.classList.add('offline'); if (firstSync) toast('Sync-Fehler'); } catch(_) {} }
+  firstSync = false;
 }
 async function syncToSupabase() {
   const dot = document.querySelector('.sync-dot');
-  dot.classList.add('syncing'); dot.classList.remove('offline');
+  dot.classList.add('syncing'); dot.classList.remove('online', 'offline');
   try {
     const res = await fetch(SUPABASE_URL+'/rest/v1/dashboard_data', {
       method: 'POST',
@@ -591,7 +584,7 @@ async function syncToSupabase() {
       body: JSON.stringify({ id:'main', data:state, updated_at:new Date().toISOString() })
     });
     dot.classList.remove('syncing');
-    if (res.ok) { dot.style.background = 'var(--green)'; }
+    if (res.ok) { dot.classList.add('online'); }
     else { dot.classList.add('offline'); toast('Sync-Fehler (Code '+res.status+')'); }
   } catch(e) {
     try { dot.classList.remove('syncing'); dot.classList.add('offline'); toast('Sync-Fehler'); } catch(_) {}
@@ -599,7 +592,7 @@ async function syncToSupabase() {
 }
 
 window.addEventListener('online', () => { syncToSupabase(); });
-window.addEventListener('offline', () => { document.querySelector('.sync-dot').classList.add('offline'); });
+window.addEventListener('offline', () => { document.querySelector('.sync-dot').classList.remove('online'); document.querySelector('.sync-dot').classList.add('offline'); });
 
 function load() {
   try {
@@ -936,19 +929,10 @@ function deleteDesign() {
 }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
-/* ---------- DEVICE + HISTORY ---------- */
-function setDevice(val) {
-  state.device = val;
-  save();
-}
-function renderDevice() {
-  document.getElementById('device-select').value = state.device || 'iPhone';
-}
 function esc(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 /* ---------- RENDER ALL ---------- */
 function renderAll() {
-  try { renderDevice(); } catch(e) {}
   try { renderCountdown(); } catch(e) {}
   try { renderKPIs(); } catch(e) {}
   try { renderPipeline(); } catch(e) {}
