@@ -71,7 +71,9 @@
   }
   .brand-text h1 { font-family: 'Archivo'; font-weight: 700; font-size: 17px; letter-spacing: -.02em; }
   .brand-text p { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono'; margin-top: -1px; }
-  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); transition: background .3s; }
+  .sync-dot.offline { background: var(--text3); box-shadow: none; }
+  .sync-dot.syncing { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
   .device-pick { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; padding: 5px 10px 5px 12px; }
   .device-pick select {
     background: transparent; border: none; color: var(--text); font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 500;
@@ -285,6 +287,7 @@
 
   input[type="file"] { display: none; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -562,7 +565,41 @@ const AGENTS = [
   {ph:'Phase 2', nm:'Wiederkauf', ds:'Nachbestellung'},
 ];
 
+const SUPABASE_URL = 'https://fqkjnuvilclxadfrncot.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxa2pudXZpbGNseGFkZnJuY290Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3ODc4NDQsImV4cCI6MjA5NzM2Mzg0NH0.0c4IgImzLlNcj30CtkH9cUIHbpRHLHNaTPJk2O1QiVI';
+let supabase = null;
+
+try { supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON); } catch(e) {}
+
 let state = load();
+syncFromSupabase();
+
+async function syncFromSupabase() {
+  if (!supabase) return;
+  try {
+    const { data, error } = await supabase.from('dashboard_data').select('data').eq('id', 'main').single();
+    if (error) return;
+    if (data && data.data) {
+      Object.assign(state, data.data);
+      if (!state.costs) state.costs = JSON.parse(JSON.stringify(DEFAULT.costs));
+      save();
+    }
+  } catch(e) {}
+}
+async function syncToSupabase() {
+  if (!supabase) return;
+  const dot = document.querySelector('.sync-dot');
+  dot.classList.add('syncing'); dot.classList.remove('offline');
+  try {
+    await supabase.from('dashboard_data').upsert({ id:'main', data:state, updated_at:new Date().toISOString() });
+    dot.classList.remove('syncing'); dot.style.background = 'var(--green)';
+  } catch(e) {
+    dot.classList.remove('syncing'); dot.classList.add('offline');
+  }
+}
+
+window.addEventListener('online', () => { syncToSupabase(); });
+window.addEventListener('offline', () => { document.querySelector('.sync-dot').classList.add('offline'); });
 
 function load() {
   try {
@@ -580,6 +617,7 @@ function load() {
 function save() {
   localStorage.setItem(STORE, JSON.stringify(state));
   renderAll();
+  syncToSupabase();
 }
 
 function toast(msg) {
