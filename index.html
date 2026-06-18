@@ -572,9 +572,13 @@ async function syncFromSupabase() {
     if (data && data.data) {
       Object.assign(state, data.data);
       if (!state.costs) state.costs = JSON.parse(JSON.stringify(DEFAULT.costs));
-      save();
+      localStorage.setItem(STORE, JSON.stringify(state));
+      renderAll();
+      const dot = document.querySelector('.sync-dot');
+      dot.style.background = 'var(--green)'; dot.classList.remove('syncing', 'offline');
+      toast('Daten von Server geladen');
     }
-  } catch(e) {}
+  } catch(e) { document.querySelector('.sync-dot').classList.add('offline'); }
 }
 async function syncToSupabase() {
   if (!supabase) return;
@@ -948,11 +952,16 @@ function renderAll() {
   try { renderAgents(); } catch(e) {}
 }
 
+window.addEventListener('error', function(e) {
+  const dot = document.querySelector('.sync-dot');
+  if (dot) dot.classList.add('offline');
+});
+
 document.querySelectorAll('.modal-bg').forEach(bg => {
   bg.addEventListener('click', e => { if(e.target===bg) bg.classList.remove('open'); });
 });
 
-renderAll();
+setTimeout(renderAll, 50);
 </script>
 </body>
 </html>
