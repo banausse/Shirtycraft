@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shirtycraft">
+<meta name="theme-color" content="#0d3320">
+<title>Shirtycraft Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root {
+    --bg: #0a0f0c;
+    --bg2: #111a14;
+    --bg3: #18241c;
+    --card: #131e17;
+    --border: #243b2c;
+    --border2: #1a2c20;
+    --text: #eef2ef;
+    --text2: #9db3a6;
+    --text3: #5e7568;
+    --green: #2ecc71;
+    --green2: #27ae60;
+    --green-deep: #0d3320;
+    --green-glow: rgba(46,204,113,.15);
+    --silver: #c8d2cc;
+    --amber: #f0a830;
+    --amber-bg: #2a1f08;
+    --red: #e25555;
+    --red-bg: #2a1010;
+    --blue: #4a90d9;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    padding-top: var(--safe-top);
+    padding-bottom: calc(var(--safe-bottom) + 80px);
+    overflow-x: hidden;
+  }
+
+  .wrap { max-width: 540px; margin: 0 auto; padding: 0 16px; }
+
+  /* Header */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: linear-gradient(180deg, var(--green-deep), #0a1810 90%, transparent);
+    padding: calc(var(--safe-top) + 14px) 16px 16px;
+    margin: 0 -16px 4px;
+    backdrop-filter: blur(10px);
+  }
+  .topbar-inner { max-width: 540px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-logo {
+    width: 38px; height: 38px; border-radius: 9px;
+    background: linear-gradient(145deg, var(--green), var(--green-deep));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Archivo'; font-weight: 800; font-size: 17px; color: #fff;
+    box-shadow: 0 2px 12px var(--green-glow);
+  }
+  .brand-text h1 { font-family: 'Archivo'; font-weight: 700; font-size: 17px; letter-spacing: -.02em; }
+  .brand-text p { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono'; margin-top: -1px; }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .device-pick { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; padding: 5px 10px 5px 12px; }
+  .device-pick select {
+    background: transparent; border: none; color: var(--text); font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 500;
+    outline: none; -webkit-appearance: none; padding-right: 4px; cursor: pointer;
+  }
+
+  /* Section title */
+  .sec-title {
+    font-size: 11px; font-weight: 700; color: var(--text3);
+    text-transform: uppercase; letter-spacing: .1em;
+    margin: 22px 4px 10px; display: flex; align-items: center; gap: 8px;
+  }
+  .sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border2); }
+
+  /* Hero countdown */
+  .hero {
+    background: linear-gradient(145deg, var(--green-deep), #0a1209);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative; overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -40%; right: -20%;
+    width: 260px; height: 260px; border-radius: 50%;
+    background: radial-gradient(circle, var(--green-glow), transparent 70%);
+  }
+  .hero-label { font-size: 12px; color: var(--text2); font-weight: 600; position: relative; }
+  .hero-days { display: flex; align-items: baseline; gap: 10px; margin: 4px 0 2px; position: relative; }
+  .hero-num { font-family: 'Archivo'; font-weight: 800; font-size: 56px; line-height: 1; color: var(--green); letter-spacing: -.03em; }
+  .hero-unit { font-size: 15px; color: var(--text2); font-weight: 600; }
+  .hero-sub { font-size: 12px; color: var(--text3); font-family: 'JetBrains Mono'; position: relative; }
+  .hero-bar-track { height: 5px; background: var(--bg3); border-radius: 3px; margin-top: 14px; overflow: hidden; position: relative; }
+  .hero-bar-fill { height: 100%; background: linear-gradient(90deg, var(--amber), var(--green)); border-radius: 3px; transition: width .6s; }
+
+  /* KPI grid */
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .kpi {
+    background: var(--card); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 14px;
+  }
+  .kpi-val { font-family: 'Archivo'; font-weight: 800; font-size: 28px; line-height: 1; letter-spacing: -.02em; }
+  .kpi-val.green { color: var(--green); }
+  .kpi-val.amber { color: var(--amber); }
+  .kpi-val.silver { color: var(--silver); }
+  .kpi-label { font-size: 11px; color: var(--text2); margin-top: 5px; font-weight: 500; }
+  .kpi-sub { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono'; margin-top: 2px; }
+
+  /* Revenue card */
+  .rev-card {
+    background: linear-gradient(145deg, var(--card), var(--bg2));
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;
+  }
+  .rev-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px; }
+  .rev-amount { font-family: 'Archivo'; font-weight: 800; font-size: 34px; color: var(--green); letter-spacing: -.02em; line-height: 1; }
+  .rev-amount-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; font-weight: 600; }
+  .rev-goal { text-align: right; }
+  .rev-goal-num { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 15px; color: var(--text); }
+  .rev-goal-label { font-size: 10px; color: var(--text3); }
+  .rev-bar-track { height: 10px; background: var(--bg3); border-radius: 6px; overflow: hidden; position: relative; }
+  .rev-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green2), var(--green)); border-radius: 6px; transition: width .6s; position: relative; }
+  .rev-markers { display: flex; justify-content: space-between; margin-top: 8px; }
+  .rev-marker { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono'; }
+  .rev-breakdown { display: flex; gap: 16px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border2); }
+  .rev-bd-item { flex: 1; }
+  .rev-bd-val { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 16px; color: var(--text); }
+  .rev-bd-label { font-size: 10px; color: var(--text3); margin-top: 1px; }
+
+  /* Status pipeline */
+  .pipeline { display: flex; flex-direction: column; gap: 7px; }
+  .pipe-row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 11px 14px;
+  }
+  .pipe-bar-wrap { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+  .pipe-bar { height: 100%; border-radius: 3px; transition: width .5s; }
+  .pipe-name { font-size: 12px; color: var(--text2); min-width: 92px; font-weight: 500; }
+  .pipe-count { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 14px; min-width: 22px; text-align: right; }
+
+  /* Cards: designs & orders */
+  .card {
+    background: var(--card); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 13px 14px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .card-main { flex: 1; min-width: 0; }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-meta { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: 'JetBrains Mono'; }
+  .pill {
+    font-size: 10px; font-weight: 700; padding: 4px 9px; border-radius: 20px;
+    white-space: nowrap; font-family: 'JetBrains Mono';
+  }
+  .pill.gray { background: var(--bg3); color: var(--text2); }
+  .pill.blue { background: rgba(74,144,217,.15); color: var(--blue); }
+  .pill.amber { background: var(--amber-bg); color: var(--amber); }
+  .pill.green { background: var(--green-glow); color: var(--green); }
+  .pill.red { background: var(--red-bg); color: var(--red); }
+
+  .id-tag { font-family: 'JetBrains Mono'; font-size: 10px; font-weight: 700; color: var(--text3); background: var(--bg3); padding: 3px 7px; border-radius: 5px; }
+
+  /* Cost rows */
+  .cost-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); margin-bottom: 7px; }
+  .cost-name { font-size: 13px; font-weight: 500; }
+  .cost-note { font-size: 10px; color: var(--text3); margin-top: 1px; }
+  .cost-val { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 14px; }
+  .cost-total { background: var(--green-deep); border-color: var(--border); }
+  .cost-total .cost-name { font-weight: 700; color: var(--green); }
+  .cost-total .cost-val { color: var(--green); }
+
+  /* Roadmap phases */
+  .phase-card { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); margin-bottom: 8px; overflow: hidden; }
+  .phase-head { padding: 13px 14px; display: flex; align-items: center; gap: 11px; cursor: pointer; }
+  .phase-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .phase-dot.on { background: var(--green); box-shadow: 0 0 7px var(--green); }
+  .phase-dot.off { background: var(--text3); }
+  .phase-info { flex: 1; }
+  .phase-name { font-size: 14px; font-weight: 600; }
+  .phase-meta { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .phase-pct { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 13px; color: var(--green); }
+  .phase-chev { color: var(--text3); transition: transform .25s; font-size: 12px; }
+  .phase-chev.open { transform: rotate(90deg); }
+  .phase-body { display: none; padding: 0 14px 14px; }
+  .phase-body.open { display: block; }
+  .ms-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--border2); }
+  .ms-check { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--text3); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; transition: all .15s; }
+  .ms-check.done { background: var(--green); border-color: var(--green); color: #08130c; }
+  .ms-label { font-size: 13px; flex: 1; }
+  .ms-label.done { color: var(--text3); text-decoration: line-through; }
+  .ms-week { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono'; }
+
+  /* Agents */
+  .agent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .agent { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 12px; }
+  .agent-ph { font-size: 9px; font-family: 'JetBrains Mono'; font-weight: 700; color: var(--green); }
+  .agent-nm { font-size: 13px; font-weight: 600; margin-top: 3px; }
+  .agent-ds { font-size: 10px; color: var(--text3); margin-top: 2px; line-height: 1.4; }
+
+  /* Add button + forms */
+  .add-btn {
+    width: 100%; background: var(--bg3); border: 1px dashed var(--border);
+    border-radius: var(--radius-sm); padding: 12px; color: var(--text2);
+    font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 4px;
+  }
+  .add-btn:active { background: var(--border2); }
+
+  /* Bottom toolbar */
+  .toolbar {
+    position: fixed; bottom: 0; z-index: 60;
+    background: rgba(10,15,12,.92); backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    padding: 10px 16px calc(10px + var(--safe-bottom));
+    display: flex; gap: 8px;
+    left: 50%; transform: translateX(-50%); max-width: 540px; width: 100%;
+  }
+  .tool-btn {
+    flex: 1; background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 11px; color: var(--text);
+    font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .tool-btn:active { background: var(--border2); }
+  .tool-btn.primary { background: var(--green-deep); border-color: var(--green2); color: var(--green); }
+  .tool-ico { font-size: 17px; }
+
+  /* Modal */
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 100; display: none; align-items: flex-end; }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--bg2); border-top-left-radius: 22px; border-top-right-radius: 22px;
+    width: 100%; max-width: 540px; margin: 0 auto; padding: 8px 18px calc(24px + var(--safe-bottom));
+    max-height: 88vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--border); border-bottom: none;
+  }
+  .modal-handle { width: 38px; height: 4px; background: var(--border); border-radius: 3px; margin: 8px auto 16px; }
+  .modal h3 { font-family: 'Archivo'; font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+  .field { margin-bottom: 13px; }
+  .field label { display: block; font-size: 12px; color: var(--text2); font-weight: 600; margin-bottom: 5px; }
+  .field input, .field select {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px; color: var(--text);
+    font-size: 16px; font-family: inherit; outline: none; -webkit-appearance: none;
+  }
+  .field input:focus, .field select:focus { border-color: var(--green2); }
+  .modal-actions { display: flex; gap: 9px; margin-top: 8px; }
+  .btn { flex: 1; padding: 13px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; border: none; }
+  .btn-save { background: var(--green); color: #08130c; }
+  .btn-cancel { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
+  .btn-del { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); flex: 0 0 auto; padding: 13px 16px; }
+
+  .empty { text-align: center; padding: 22px; color: var(--text3); font-size: 13px; }
+
+  /* History */
+  .hist-row { display: flex; align-items: center; gap: 11px; background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 7px; }
+  .hist-action { font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono'; white-space: nowrap; }
+  .hist-action.exp { color: var(--green); }
+  .hist-action.imp { color: var(--blue); }
+  .hist-main { flex: 1; min-width: 0; }
+  .hist-device { font-size: 13px; color: var(--text); font-weight: 500; }
+  .hist-time { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono'; white-space: nowrap; }
+
+  .toast {
+    position: fixed; bottom: calc(90px + var(--safe-bottom)); left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--green); color: #08130c; padding: 11px 20px; border-radius: 24px;
+    font-size: 13px; font-weight: 700; z-index: 200; opacity: 0; transition: all .3s; pointer-events: none;
+    box-shadow: 0 6px 20px rgba(0,0,0,.4);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  input[type="file"] { display: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-logo">SC</div>
+      <div class="brand-text">
+        <h1>Shirtycraft</h1>
+        <p>Dashboard · Phase 1</p>
+      </div>
+    </div>
+    <div class="device-pick">
+      <span class="sync-dot" title="Lokal gespeichert"></span>
+      <select id="device-select" onchange="setDevice(this.value)">
+        <option value="iPhone">iPhone</option>
+        <option value="Laptop">Laptop</option>
+        <option value="PC">PC</option>
+        <option value="Mac">Mac</option>
+        <option value="iPad">iPad</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- HERO COUNTDOWN -->
+  <div class="hero">
+    <div class="hero-label">Abos enden · Entscheidung Go/No-Go</div>
+    <div class="hero-days">
+      <span class="hero-num" id="cd-days">–</span>
+      <span class="hero-unit">Tage bis 15.07.</span>
+    </div>
+    <div class="hero-sub" id="cd-sub">Midjourney · Vectorizer.ai · Claude Pro</div>
+    <div class="hero-bar-track"><div class="hero-bar-fill" id="cd-bar"></div></div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="sec-title">Überblick</div>
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-val green" id="kpi-orders">0</div>
+      <div class="kpi-label">Bezahlte Aufträge</div>
+      <div class="kpi-sub" id="kpi-orders-sub">Ziel: 10 für Phase 2</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val silver" id="kpi-designs">0</div>
+      <div class="kpi-label">Designs live</div>
+      <div class="kpi-sub" id="kpi-designs-sub">von 0 gesamt</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val amber" id="kpi-open">0</div>
+      <div class="kpi-label">Offene Aufträge</div>
+      <div class="kpi-sub">in Bearbeitung</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val" id="kpi-leads">0</div>
+      <div class="kpi-label">Aktive Leads</div>
+      <div class="kpi-sub">noch nicht bezahlt</div>
+    </div>
+  </div>
+
+  <!-- REVENUE -->
+  <div class="sec-title">Umsatz gegen Break-Even</div>
+  <div class="rev-card">
+    <div class="rev-top">
+      <div>
+        <div class="rev-amount-label">Eingenommen (Phase 1)</div>
+        <div class="rev-amount" id="rev-total">0 €</div>
+      </div>
+      <div class="rev-goal">
+        <div class="rev-goal-num" id="rev-goal">Break-Even</div>
+        <div class="rev-goal-label">~37 € Toolkosten/Mon.</div>
+      </div>
+    </div>
+    <div class="rev-bar-track"><div class="rev-bar-fill" id="rev-bar"></div></div>
+    <div class="rev-markers">
+      <span class="rev-marker">0 €</span>
+      <span class="rev-marker" id="rev-be-mark">BE ~37 €</span>
+    </div>
+    <div class="rev-breakdown">
+      <div class="rev-bd-item">
+        <div class="rev-bd-val" id="rev-design">0 €</div>
+        <div class="rev-bd-label">Designpauschalen</div>
+      </div>
+      <div class="rev-bd-item">
+        <div class="rev-bd-val" id="rev-margin">0 €</div>
+        <div class="rev-bd-label">Produktmargen</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESIGN PIPELINE -->
+  <div class="sec-title">Design-Fortschritt</div>
+  <div class="pipeline" id="pipeline"></div>
+
+  <!-- ORDERS -->
+  <div class="sec-title">Auftrags-Tracker</div>
+  <div id="orders-list"></div>
+  <button class="add-btn" onclick="openOrderModal()">＋ Auftrag hinzufügen</button>
+
+  <!-- DESIGNS -->
+  <div class="sec-title">Designs</div>
+  <div id="designs-list"></div>
+  <button class="add-btn" onclick="openDesignModal()">＋ Design hinzufügen</button>
+
+  <!-- COSTS -->
+  <div class="sec-title">Toolkosten Phase 1</div>
+  <div id="costs-list"></div>
+  <button class="add-btn" onclick="openCostModal()">＋ Tool hinzufügen</button>
+
+  <!-- HISTORY -->
+  <div class="sec-title">Sync-Historie</div>
+  <div id="history-list"></div>
+
+  <!-- ROADMAP -->
+  <div class="sec-title">Roadmap</div>
+  <div id="roadmap"></div>
+
+  <!-- AGENTS -->
+  <div class="sec-title">Claude-Agenten</div>
+  <div class="agent-grid" id="agents"></div>
+
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <button class="tool-btn primary" onclick="openOrderModal()"><span class="tool-ico">＋</span>Auftrag</button>
+  <button class="tool-btn" onclick="openDesignModal()"><span class="tool-ico">🎨</span>Design</button>
+  <button class="tool-btn" onclick="exportData()"><span class="tool-ico">⬆</span>Export</button>
+  <button class="tool-btn" onclick="document.getElementById('import-file').click()"><span class="tool-ico">⬇</span>Import</button>
+  <input type="file" id="import-file" accept=".json" onchange="importData(event)">
+</div>
+
+<!-- ORDER MODAL -->
+<div class="modal-bg" id="order-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="order-modal-title">Auftrag hinzufügen</h3>
+    <input type="hidden" id="order-id">
+    <div class="field"><label>Betrieb</label><input type="text" id="order-betrieb" placeholder="z.B. Müller Elektro"></div>
+    <div class="field"><label>Gewerk</label>
+      <select id="order-gewerk">
+        <option>Elektro</option><option>Sanitär/HKS</option><option>Maler</option>
+        <option>Schreiner</option><option>Kfz</option><option>Garten/Landschaft</option><option>Sonstiges</option>
+      </select>
+    </div>
+    <div class="field"><label>Status</label>
+      <select id="order-status">
+        <option>Lead</option><option>Kontaktiert</option><option>Formular erhalten</option>
+        <option>Design in Arbeit</option><option>Freigabe ausstehend</option>
+        <option>Bestellt</option><option>Abgeschlossen</option>
+      </select>
+    </div>
+    <div class="field"><label>Designpauschale bezahlt?</label>
+      <select id="order-paid"><option value="nein">Nein</option><option value="ja">Ja (49 €)</option></select>
+    </div>
+    <div class="field"><label>Verkaufte Produkte (à 10 € Marge)</label><input type="number" id="order-qty" placeholder="0" min="0"></div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal('order-modal')">Abbrechen</button>
+      <button class="btn btn-save" onclick="saveOrder()">Speichern</button>
+      <button class="btn btn-del" id="order-del" onclick="deleteOrder()" style="display:none">Löschen</button>
+    </div>
+  </div>
+</div>
+
+<!-- DESIGN MODAL -->
+<div class="modal-bg" id="design-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="design-modal-title">Design hinzufügen</h3>
+    <input type="hidden" id="design-id">
+    <div class="field"><label>Name</label><input type="text" id="design-name" placeholder="z.B. Meister Elektro Badge"></div>
+    <div class="field"><label>Gewerk</label>
+      <select id="design-gewerk">
+        <option>Elektro</option><option>Sanitär/HKS</option><option>Maler</option>
+        <option>Schreiner</option><option>Kfz</option><option>Garten/Landschaft</option><option>Sonstiges</option>
+      </select>
+    </div>
+    <div class="field"><label>Typ</label>
+      <select id="design-typ"><option>Beispieldesign</option><option>Kundenauftrag</option></select>
+    </div>
+    <div class="field"><label>Status</label>
+      <select id="design-status">
+        <option>Midjourney offen</option><option>Generiert</option><option>Vektorisiert</option>
+        <option>Illustrator fertig</option><option>Live im Shop</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal('design-modal')">Abbrechen</button>
+      <button class="btn btn-save" onclick="saveDesign()">Speichern</button>
+      <button class="btn btn-del" id="design-del" onclick="deleteDesign()" style="display:none">Löschen</button>
+    </div>
+  </div>
+</div>
+
+<!-- COST MODAL -->
+<div class="modal-bg" id="cost-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="cost-modal-title">Tool hinzufügen</h3>
+    <input type="hidden" id="cost-id">
+    <div class="field"><label>Tool-Name</label><input type="text" id="cost-name" placeholder="z.B. Midjourney Standard"></div>
+    <div class="field"><label>Notiz</label><input type="text" id="cost-note" placeholder="z.B. Bildgenerierung"></div>
+    <div class="field"><label>Kosten / Monat (USD)</label><input type="number" id="cost-val" placeholder="0" min="0" step="0.01"></div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal('cost-modal')">Abbrechen</button>
+      <button class="btn btn-save" onclick="saveCost()">Speichern</button>
+      <button class="btn btn-del" id="cost-del" onclick="deleteCost()" style="display:none">Löschen</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORE = 'shirtycraft_dashboard_v1';
+const DEADLINE = new Date('2026-07-15T23:59:59');
+const TOOLCOST = 37;
+const EUR_PER_DESIGN = 49;
+const EUR_PER_PRODUCT = 10;
+
+const DEFAULT = {
+  device: 'iPhone',
+  history: [],
+  costs: [
+    { id:'c1', name:'Midjourney Standard', note:'Bildgenerierung · endet 15.07.', val:30 },
+    { id:'c2', name:'Vectorizer.ai', note:'Vektorisierung · endet 15.07.', val:9.99 },
+    { id:'c3', name:'Claude Pro', note:'KI-Unterstützung · endet 15.07.', val:20 },
+    { id:'c4', name:'Tally.so', note:'Kundenformular', val:0 },
+    { id:'c5', name:'Spreadshirt', note:'Shop & Druck', val:0 },
+  ],
+  orders: [],
+  designs: [
+    { id:'SC-001', name:'Meister Elektro Badge', gewerk:'Elektro', typ:'Beispieldesign', status:'Generiert' },
+    { id:'SC-002', name:'Farbenfroh Maler Badge', gewerk:'Maler', typ:'Beispieldesign', status:'Generiert' },
+    { id:'SC-003', name:'Wasser & Wärme Badge', gewerk:'Sanitär/HKS', typ:'Beispieldesign', status:'Generiert' },
+  ],
+  milestones: {}
+};
+
+const DESIGN_STATUS = ['Midjourney offen','Generiert','Vektorisiert','Illustrator fertig','Live im Shop'];
+const ORDER_STATUS = ['Lead','Kontaktiert','Formular erhalten','Design in Arbeit','Freigabe ausstehend','Bestellt','Abgeschlossen'];
+
+const ROADMAP = [
+  { id:'p1', name:'Phase 1 — Manuell', meta:'Ziel: 10 Aufträge · 8–12 Wo.', active:true, ms:[
+    {id:'m1', t:'Zielgruppe Handwerk bestätigt', w:'W1'},
+    {id:'m2', t:'30 Leads recherchiert', w:'W1'},
+    {id:'m3', t:'Akquise-E-Mail erstellt', w:'W2'},
+    {id:'m4', t:'Tally-Formular live', w:'W2'},
+    {id:'m5', t:'3 Beispieldesigns live', w:'W1'},
+    {id:'m6', t:'Vectorizer-Workflow getestet', w:'W1', done:true},
+    {id:'m7', t:'Spreadshop eingerichtet', w:'W1', done:true},
+    {id:'m8', t:'Preismodell definiert (49€)', w:'W1', done:true},
+    {id:'m9', t:'10 bezahlte Aufträge ✦ Go/No-Go', w:'W12'},
+  ]},
+  { id:'p2', name:'Phase 2 — Teilautomatisierung', meta:'Nach Go/No-Go · 15–20/Mon.', active:false, ms:[
+    {id:'n1', t:'n8n Cloud eingerichtet', w:'M1'},
+    {id:'n2', t:'Tally → n8n Webhook', w:'M1'},
+    {id:'n3', t:'Claude Haiku API integriert', w:'M1'},
+    {id:'n4', t:'Freigabe-E-Mail-Flow', w:'M2'},
+    {id:'n5', t:'Gewerk-Lookup (6 Gewerke)', w:'M2'},
+    {id:'n6', t:'Erste Referenzkunden', w:'M3'},
+    {id:'n7', t:'Wiederkauf-Flow aktiv', w:'M3'},
+  ]},
+];
+
+const AGENTS = [
+  {ph:'Phase 1', nm:'Texter', ds:'Akquise-E-Mails & Nachfassen'},
+  {ph:'Phase 1', nm:'Prompt-Architekt', ds:'Midjourney-Prompts'},
+  {ph:'Phase 1', nm:'Projektmanager', ds:'Auftragstracking'},
+  {ph:'Phase 2', nm:'Qualitätsprüfer', ds:'Design-Review'},
+  {ph:'Phase 2', nm:'Formular-Analytiker', ds:'Input-Validierung'},
+  {ph:'Phase 2', nm:'Wiederkauf', ds:'Nachbestellung'},
+];
+
+let state = load();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE);
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (!s.device) s.device = 'iPhone';
+      if (!s.history) s.history = [];
+      if (!s.costs) s.costs = JSON.parse(JSON.stringify(DEFAULT.costs));
+      return s;
+    }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT));
+}
+function save() {
+  localStorage.setItem(STORE, JSON.stringify(state));
+  renderAll();
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* ---------- COUNTDOWN ---------- */
+function renderCountdown() {
+  const now = new Date();
+  const ms = DEADLINE - now;
+  const days = Math.max(0, Math.ceil(ms/(1000*60*60*24)));
+  document.getElementById('cd-days').textContent = days;
+  const totalWindow = 29;
+  const elapsed = Math.max(0, Math.min(100, (1 - days/totalWindow) * 100));
+  document.getElementById('cd-bar').style.width = elapsed + '%';
+  document.getElementById('cd-sub').textContent = days > 0
+    ? 'Midjourney · Vectorizer.ai · Claude Pro' : 'Entscheidung jetzt fällig';
+}
+
+/* ---------- KPIs + REVENUE ---------- */
+function renderKPIs() {
+  const paid = state.orders.filter(o => o.paid === 'ja');
+  const paidCount = paid.length;
+  const designsLive = state.designs.filter(d => d.status === 'Live im Shop').length;
+  const openCount = state.orders.filter(o => ['Formular erhalten','Design in Arbeit','Freigabe ausstehend','Bestellt'].includes(o.status)).length;
+  const leads = state.orders.filter(o => ['Lead','Kontaktiert'].includes(o.status)).length;
+
+  document.getElementById('kpi-orders').textContent = paidCount;
+  document.getElementById('kpi-orders-sub').textContent = paidCount >= 10 ? '✓ Phase 2 erreichbar!' : `Ziel: 10 für Phase 2`;
+  document.getElementById('kpi-designs').textContent = designsLive;
+  document.getElementById('kpi-designs-sub').textContent = `von ${state.designs.length} gesamt`;
+  document.getElementById('kpi-open').textContent = openCount;
+  document.getElementById('kpi-leads').textContent = leads;
+
+  const designRev = paid.length * EUR_PER_DESIGN;
+  const marginRev = state.orders.reduce((s,o)=> s + (parseInt(o.qty)||0)*EUR_PER_PRODUCT, 0);
+  const total = designRev + marginRev;
+
+  document.getElementById('rev-total').textContent = total + ' €';
+  document.getElementById('rev-design').textContent = designRev + ' €';
+  document.getElementById('rev-margin').textContent = marginRev + ' €';
+
+  const beTarget = TOOLCOST;
+  const pct = Math.min(100, (total/beTarget)*100);
+  document.getElementById('rev-bar').style.width = pct + '%';
+  if (total >= beTarget) {
+    document.getElementById('rev-goal').textContent = '✓ erreicht';
+    document.getElementById('rev-goal').style.color = 'var(--green)';
+  } else {
+    document.getElementById('rev-goal').textContent = (beTarget-total) + ' € fehlen';
+    document.getElementById('rev-goal').style.color = 'var(--text)';
+  }
+}
+
+/* ---------- PIPELINE ---------- */
+function renderPipeline() {
+  const counts = {};
+  DESIGN_STATUS.forEach(s => counts[s] = 0);
+  state.designs.forEach(d => { if(counts[d.status]!==undefined) counts[d.status]++; });
+  const max = Math.max(1, ...Object.values(counts));
+  const colors = {
+    'Midjourney offen':'var(--text3)','Generiert':'var(--blue)','Vektorisiert':'var(--amber)',
+    'Illustrator fertig':'var(--silver)','Live im Shop':'var(--green)'
+  };
+  let html = '';
+  DESIGN_STATUS.forEach(s => {
+    const c = counts[s];
+    const w = (c/max)*100;
+    html += `<div class="pipe-row">
+      <span class="pipe-name">${s}</span>
+      <div class="pipe-bar-wrap"><div class="pipe-bar" style="width:${w}%;background:${colors[s]}"></div></div>
+      <span class="pipe-count" style="color:${colors[s]}">${c}</span>
+    </div>`;
+  });
+  document.getElementById('pipeline').innerHTML = html;
+}
+
+/* ---------- ORDERS ---------- */
+function orderPill(status) {
+  const map = {
+    'Lead':'gray','Kontaktiert':'gray','Formular erhalten':'blue','Design in Arbeit':'blue',
+    'Freigabe ausstehend':'amber','Bestellt':'green','Abgeschlossen':'green'
+  };
+  return map[status] || 'gray';
+}
+function renderOrders() {
+  const el = document.getElementById('orders-list');
+  if (!state.orders.length) { el.innerHTML = '<div class="empty">Noch keine Aufträge. Tippe unten auf „Auftrag".</div>'; return; }
+  el.innerHTML = state.orders.map(o => `
+    <div class="card" onclick='openOrderModal(${JSON.stringify(o.id)})'>
+      <div class="card-main">
+        <div class="card-title">${esc(o.betrieb)}</div>
+        <div class="card-meta">${o.gewerk} · ${o.paid==='ja'?'49€ bezahlt':'offen'}${o.qty>0?' · '+o.qty+' Stk':''}</div>
+      </div>
+      <span class="pill ${orderPill(o.status)}">${o.status}</span>
+    </div>`).join('');
+}
+
+/* ---------- DESIGNS ---------- */
+function designPill(status) {
+  const map = {'Midjourney offen':'gray','Generiert':'blue','Vektorisiert':'amber','Illustrator fertig':'gray','Live im Shop':'green'};
+  return map[status]||'gray';
+}
+function renderDesigns() {
+  const el = document.getElementById('designs-list');
+  if (!state.designs.length) { el.innerHTML = '<div class="empty">Noch keine Designs.</div>'; return; }
+  el.innerHTML = state.designs.map(d => `
+    <div class="card" onclick='openDesignModal(${JSON.stringify(d.id)})'>
+      <span class="id-tag">${d.id}</span>
+      <div class="card-main">
+        <div class="card-title">${esc(d.name)}</div>
+        <div class="card-meta">${d.gewerk} · ${d.typ}</div>
+      </div>
+      <span class="pill ${designPill(d.status)}">${d.status}</span>
+    </div>`).join('');
+}
+
+/* ---------- COSTS ---------- */
+function fmtUSD(n){ return '$' + (Math.round(n*100)/100).toLocaleString('de-DE',{minimumFractionDigits: n%1?2:0, maximumFractionDigits:2}); }
+function renderCosts() {
+  let html = state.costs.map(c => `
+    <div class="cost-row" onclick='openCostModal(${JSON.stringify(c.id)})'>
+      <div><div class="cost-name">${esc(c.name)}</div><div class="cost-note">${esc(c.note)}</div></div>
+      <div class="cost-val">${fmtUSD(c.val)}</div>
+    </div>`).join('');
+  const total = state.costs.reduce((s,c)=> s + (parseFloat(c.val)||0), 0);
+  const be = Math.max(1, Math.ceil(total / EUR_PER_PRODUCT));
+  html += `<div class="cost-row cost-total">
+    <div><div class="cost-name">Gesamt / Monat</div><div class="cost-note">Break-Even: ${be} Aufträge à 10€</div></div>
+    <div class="cost-val">${fmtUSD(total)}</div></div>`;
+  document.getElementById('costs-list').innerHTML = html;
+}
+function openCostModal(id) {
+  const m = document.getElementById('cost-modal');
+  if (id) {
+    const c = state.costs.find(x=>x.id===id);
+    document.getElementById('cost-modal-title').textContent = 'Tool bearbeiten';
+    document.getElementById('cost-id').value = c.id;
+    document.getElementById('cost-name').value = c.name;
+    document.getElementById('cost-note').value = c.note;
+    document.getElementById('cost-val').value = c.val;
+    document.getElementById('cost-del').style.display = 'block';
+  } else {
+    document.getElementById('cost-modal-title').textContent = 'Tool hinzufügen';
+    document.getElementById('cost-id').value = '';
+    document.getElementById('cost-name').value = '';
+    document.getElementById('cost-note').value = '';
+    document.getElementById('cost-val').value = '';
+    document.getElementById('cost-del').style.display = 'none';
+  }
+  m.classList.add('open');
+}
+function saveCost() {
+  const name = document.getElementById('cost-name').value.trim();
+  if (!name) { toast('Name fehlt'); return; }
+  const id = document.getElementById('cost-id').value;
+  const data = {
+    id: id || 'c'+Date.now(),
+    name,
+    note: document.getElementById('cost-note').value.trim(),
+    val: parseFloat(document.getElementById('cost-val').value)||0
+  };
+  if (id) { const i = state.costs.findIndex(x=>x.id===id); state.costs[i]=data; }
+  else state.costs.push(data);
+  closeModal('cost-modal'); save(); toast('Gespeichert');
+}
+function deleteCost() {
+  const id = document.getElementById('cost-id').value;
+  state.costs = state.costs.filter(x=>x.id!==id);
+  closeModal('cost-modal'); save(); toast('Gelöscht');
+}
+
+/* ---------- ROADMAP ---------- */
+function renderRoadmap() {
+  let html = '';
+  ROADMAP.forEach(p => {
+    const total = p.ms.length;
+    const done = p.ms.filter(m => state.milestones[m.id] ?? m.done).length;
+    const pct = Math.round((done/total)*100);
+    const open = p.id === 'p1';
+    html += `<div class="phase-card">
+      <div class="phase-head" onclick="togglePhase('${p.id}')">
+        <span class="phase-dot ${p.active?'on':'off'}"></span>
+        <div class="phase-info"><div class="phase-name">${p.name}</div><div class="phase-meta">${p.meta}</div></div>
+        <span class="phase-pct">${pct}%</span>
+        <span class="phase-chev ${open?'open':''}" id="chev-${p.id}">›</span>
+      </div>
+      <div class="phase-body ${open?'open':''}" id="body-${p.id}">
+        ${p.ms.map(m => {
+          const isDone = state.milestones[m.id] ?? m.done ?? false;
+          return `<div class="ms-item">
+            <div class="ms-check ${isDone?'done':''}" onclick="toggleMs('${m.id}', event)">${isDone?'✓':''}</div>
+            <span class="ms-label ${isDone?'done':''}">${m.t}</span>
+            <span class="ms-week">${m.w}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+  document.getElementById('roadmap').innerHTML = html;
+}
+function togglePhase(id) {
+  document.getElementById('body-'+id).classList.toggle('open');
+  document.getElementById('chev-'+id).classList.toggle('open');
+}
+function toggleMs(id, e) {
+  e.stopPropagation();
+  const cur = state.milestones[id] ?? ROADMAP.flatMap(p=>p.ms).find(m=>m.id===id).done ?? false;
+  state.milestones[id] = !cur;
+  save();
+}
+
+/* ---------- AGENTS ---------- */
+function renderAgents() {
+  document.getElementById('agents').innerHTML = AGENTS.map(a => `
+    <div class="agent"><div class="agent-ph">${a.ph}</div><div class="agent-nm">${a.nm}</div><div class="agent-ds">${a.ds}</div></div>
+  `).join('');
+}
+
+/* ---------- MODALS ---------- */
+function openOrderModal(id) {
+  const m = document.getElementById('order-modal');
+  if (id) {
+    const o = state.orders.find(x=>x.id===id);
+    document.getElementById('order-modal-title').textContent = 'Auftrag bearbeiten';
+    document.getElementById('order-id').value = o.id;
+    document.getElementById('order-betrieb').value = o.betrieb;
+    document.getElementById('order-gewerk').value = o.gewerk;
+    document.getElementById('order-status').value = o.status;
+    document.getElementById('order-paid').value = o.paid;
+    document.getElementById('order-qty').value = o.qty||'';
+    document.getElementById('order-del').style.display = 'block';
+  } else {
+    document.getElementById('order-modal-title').textContent = 'Auftrag hinzufügen';
+    document.getElementById('order-id').value = '';
+    document.getElementById('order-betrieb').value = '';
+    document.getElementById('order-gewerk').value = 'Elektro';
+    document.getElementById('order-status').value = 'Lead';
+    document.getElementById('order-paid').value = 'nein';
+    document.getElementById('order-qty').value = '';
+    document.getElementById('order-del').style.display = 'none';
+  }
+  m.classList.add('open');
+}
+function saveOrder() {
+  const betrieb = document.getElementById('order-betrieb').value.trim();
+  if (!betrieb) { toast('Betrieb fehlt'); return; }
+  const id = document.getElementById('order-id').value;
+  const data = {
+    id: id || 'o'+Date.now(),
+    betrieb,
+    gewerk: document.getElementById('order-gewerk').value,
+    status: document.getElementById('order-status').value,
+    paid: document.getElementById('order-paid').value,
+    qty: parseInt(document.getElementById('order-qty').value)||0
+  };
+  if (id) { const i = state.orders.findIndex(x=>x.id===id); state.orders[i]=data; }
+  else state.orders.push(data);
+  closeModal('order-modal'); save(); toast('Gespeichert');
+}
+function deleteOrder() {
+  const id = document.getElementById('order-id').value;
+  state.orders = state.orders.filter(x=>x.id!==id);
+  closeModal('order-modal'); save(); toast('Gelöscht');
+}
+
+function openDesignModal(id) {
+  const m = document.getElementById('design-modal');
+  if (id) {
+    const d = state.designs.find(x=>x.id===id);
+    document.getElementById('design-modal-title').textContent = 'Design bearbeiten';
+    document.getElementById('design-id').value = d.id;
+    document.getElementById('design-name').value = d.name;
+    document.getElementById('design-gewerk').value = d.gewerk;
+    document.getElementById('design-typ').value = d.typ;
+    document.getElementById('design-status').value = d.status;
+    document.getElementById('design-del').style.display = 'block';
+  } else {
+    document.getElementById('design-modal-title').textContent = 'Design hinzufügen';
+    document.getElementById('design-id').value = '';
+    document.getElementById('design-name').value = '';
+    document.getElementById('design-gewerk').value = 'Elektro';
+    document.getElementById('design-typ').value = 'Kundenauftrag';
+    document.getElementById('design-status').value = 'Midjourney offen';
+    document.getElementById('design-del').style.display = 'none';
+  }
+  m.classList.add('open');
+}
+function nextDesignId() {
+  let max = 0;
+  state.designs.forEach(d => { const n = parseInt((d.id||'').replace('SC-','')); if(!isNaN(n)&&n>max) max=n; });
+  return 'SC-' + String(max+1).padStart(3,'0');
+}
+function saveDesign() {
+  const name = document.getElementById('design-name').value.trim();
+  if (!name) { toast('Name fehlt'); return; }
+  const id = document.getElementById('design-id').value;
+  const data = {
+    id: id || nextDesignId(),
+    name,
+    gewerk: document.getElementById('design-gewerk').value,
+    typ: document.getElementById('design-typ').value,
+    status: document.getElementById('design-status').value
+  };
+  if (id) { const i = state.designs.findIndex(x=>x.id===id); state.designs[i]=data; }
+  else state.designs.push(data);
+  closeModal('design-modal'); save(); toast('Gespeichert');
+}
+function deleteDesign() {
+  const id = document.getElementById('design-id').value;
+  state.designs = state.designs.filter(x=>x.id!==id);
+  closeModal('design-modal'); save(); toast('Gelöscht');
+}
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+/* ---------- DEVICE + HISTORY ---------- */
+function setDevice(val) {
+  state.device = val;
+  save();
+}
+function renderDevice() {
+  document.getElementById('device-select').value = state.device || 'iPhone';
+}
+function addHistory(action) {
+  const now = new Date();
+  const stamp = now.toLocaleString('de-DE', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+  state.history.unshift({ stamp, action, device: state.device || '–' });
+  if (state.history.length > 30) state.history = state.history.slice(0,30);
+}
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!state.history || !state.history.length) {
+    el.innerHTML = '<div class="empty">Noch keine Sync-Aktionen. Export oder Import erzeugt einen Eintrag.</div>';
+    return;
+  }
+  el.innerHTML = state.history.map(h => `
+    <div class="hist-row">
+      <span class="hist-action ${h.action==='Export'?'exp':'imp'}">${h.action==='Export'?'⬆':'⬇'} ${h.action}</span>
+      <div class="hist-main"><span class="hist-device">${esc(h.device)}</span></div>
+      <span class="hist-time">${h.stamp}</span>
+    </div>`).join('');
+}
+
+/* ---------- EXPORT / IMPORT ---------- */
+function exportData() {
+  addHistory('Export');
+  localStorage.setItem(STORE, JSON.stringify(state));
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `shirtycraft-backup-${d}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  renderAll();
+  toast('Backup exportiert');
+}
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.orders && data.designs) {
+        const currentDevice = state.device;
+        const mergedHistory = data.history || [];
+        state = data;
+        if (!state.device) state.device = currentDevice;
+        if (!state.costs) state.costs = JSON.parse(JSON.stringify(DEFAULT.costs));
+        state.history = mergedHistory;
+        addHistory('Import');
+        save(); toast('Backup importiert');
+      } else toast('Ungültige Datei');
+    } catch(err) { toast('Fehler beim Import'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function esc(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ---------- RENDER ALL ---------- */
+function renderAll() {
+  renderDevice(); renderCountdown(); renderKPIs(); renderPipeline();
+  renderOrders(); renderDesigns(); renderCosts();
+  renderHistory(); renderRoadmap(); renderAgents();
+}
+
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => { if(e.target===bg) bg.classList.remove('open'); });
+});
+
+renderAll();
+</script>
+</body>
+</html>
